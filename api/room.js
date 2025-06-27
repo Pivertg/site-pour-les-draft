@@ -4,9 +4,10 @@ let rooms = global.rooms || (global.rooms = {});
 
 export default function handler(req, res) {
   if (req.method === 'POST') {
-    // Créer une room
+    // Créer une room avec le pseudo du créateur
+    const { player } = req.body || {};
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    rooms[code] = { players: [] };
+    rooms[code] = { players: player ? [player] : [] };
     res.status(200).json({ code });
   } else if (req.method === 'GET') {
     // Obtenir l’état d’une room

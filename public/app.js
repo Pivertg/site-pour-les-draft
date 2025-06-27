@@ -73,30 +73,42 @@ document.addEventListener('DOMContentLoaded', () => {
       <button class="timer-btn" data-timer="1">1x</button>
       <button class="timer-btn" data-timer="1.5">1,5x</button>
       <button class="timer-btn" data-timer="2">2x</button>
-      <br><br>
-      <button id="play-btn" disabled>Jouer</button>
     `;
     let timer = null;
     document.querySelectorAll('.timer-btn').forEach(btn => {
       btn.onclick = (e) => {
         timer = btn.getAttribute('data-timer');
-        document.getElementById('play-btn').disabled = false;
+        showPseudoInput();
       };
     });
-    document.getElementById('play-btn').onclick = async () => {
-      // Appel API pour créer la room et récupérer le code
-      try {
-        const res = await fetch('/api/room', { method: 'POST' });
-        const data = await res.json();
-        if (data.code) {
-          showRoomCodePage(data.code, players, timer);
-        } else {
-          showRoomCodePage('(erreur)', players, timer);
+
+    function showPseudoInput() {
+      timerSection.innerHTML = `
+        <h3>Votre pseudo :</h3>
+        <input id="creator-pseudo" maxlength="16" placeholder="Votre pseudo" style="font-size:1.1em;" required autofocus>
+        <br><br>
+        <button id="play-btn">Créer la room</button>
+      `;
+      document.getElementById('play-btn').onclick = async () => {
+        const pseudo = document.getElementById('creator-pseudo').value.trim();
+        if (!pseudo) return;
+        try {
+          const res = await fetch('/api/room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ player: pseudo })
+          });
+          const data = await res.json();
+          if (data.code) {
+            showRoomCodePage(data.code, players, timer, pseudo);
+          } else {
+            showRoomCodePage('(erreur)', players, timer, pseudo);
+          }
+        } catch (e) {
+          showRoomCodePage('(erreur réseau)', players, timer, pseudo);
         }
-      } catch (e) {
-        showRoomCodePage('(erreur réseau)', players, timer);
-      }
-    };
+      };
+    }
 
     // Nouvelle page dédiée pour afficher le code de la room
     function showRoomCodePage(code, players, timer) {
