@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fin de partie</title>
+    <style>
+      body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+      .end-container {
+        max-width: 420px;
+        margin: 80px auto;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px #0002;
+        padding: 40px 32px;
+        text-align: center;
+      }
+      .end-container h1 {
+        font-size: 2em;
+        margin-bottom: 16px;
+      }
+      .end-container p {
+        font-size: 1.1em;
+        margin-bottom: 32px;
+      }
+      .end-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+      }
+      .end-actions button {
+        padding: 12px 32px;
+        font-size: 1.1em;
+        border-radius: 8px;
+        border: none;
+        background: #0078d7;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .end-actions button:disabled {
+        background: #aaa;
+        cursor: not-allowed;
+      }
+      .end-actions button:hover:not(:disabled) {
+        background: #005fa3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="end-container">
+      <h1>Partie terminée !</h1>
+      <p>Bravo à tous les joueurs.<br>Que souhaitez-vous faire ?</p>
+      <div class="end-actions">
+        <button id="restart-btn">Recommencer une partie</button>
+        <button id="discord-btn" disabled>Envoyer le résultat sur Discord (à venir)</button>
+      </div>
+    </div>
+    <script src="end.js"></script>
+  </body>
+</html>

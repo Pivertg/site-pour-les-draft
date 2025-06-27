@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jeu - Salle</title>
+    <style>
+      body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+      .container { display: flex; flex-direction: row; height: 100vh; }
+      .left-panel { width: 340px; background: #fff; box-shadow: 2px 0 8px #0001; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; }
+      .mode-img { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 12px; }
+      .map-img { width: 220px; height: 120px; object-fit: cover; border-radius: 12px; margin: 12px 0; }
+      .map-name { font-size: 1.2em; font-weight: bold; margin-bottom: 8px; }
+      .center-panel { flex: 1; display: flex; flex-direction: row; align-items: flex-start; justify-content: center; padding: 32px 0; gap: 40px; }
+      .pick-rect { width: 80px; min-height: 260px; background: #e3e3e3; border-radius: 10px; display: flex; flex-direction: column; align-items: center; padding: 8px 0; }
+      .pick-rect.bleu { background: #0078d7; }
+      .pick-rect.rouge { background: #d70022; }
+      .pick-rect .brawler-img { width: 48px; height: 48px; margin: 8px 0; border-radius: 8px; border: 2px solid #fff; background: #fff; }
+      .pick-zone { flex: 1; display: flex; flex-direction: column; align-items: center; }
+      .brawler-list { display: grid; grid-template-columns: repeat(2, 48px); gap: 10px; max-height: 320px; overflow-y: auto; background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px #0001; }
+      .brawler-btn { width: 44px; height: 44px; border: none; background: none; padding: 0; cursor: pointer; border-radius: 8px; transition: box-shadow 0.2s; }
+      .brawler-btn.selected { box-shadow: 0 0 0 3px #0078d7; }
+      .brawler-btn img { width: 100%; height: 100%; border-radius: 8px; }
+      .timer { font-size: 1.1em; margin-bottom: 12px; }
+      .actions { margin-top: 24px; }
+      .actions button { margin-right: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="left-panel">
+        <img class="mode-img" src="https://via.placeholder.com/120x120?text=Mode" id="mode-img" alt="Mode" />
+        <div class="map-name" id="map-name">Nom de la map</div>
+        <img class="map-img" src="https://via.placeholder.com/220x120?text=Map" id="map-img" alt="Map" />
+      </div>
+      <div class="center-panel">
+        <div class="pick-rect bleu" id="pick-bleu"></div>
+        <div class="pick-zone">
+          <div class="timer" id="timer">Temps restant : 60s</div>
+          <div class="brawler-list" id="brawler-list"></div>
+          <div class="actions">
+            <button id="validate-btn" disabled>Valider</button>
+            <button id="restart-btn">Recommencer</button>
+          </div>
+        </div>
+        <div class="pick-rect rouge" id="pick-rouge"></div>
+      </div>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>
