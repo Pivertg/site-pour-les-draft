@@ -1,5 +1,3 @@
-// api/join.js
-
 let rooms = global.rooms || (global.rooms = {});
 
 export default async function handler(req, res) {
