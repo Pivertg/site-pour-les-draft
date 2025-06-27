@@ -9,9 +9,47 @@ document.addEventListener('DOMContentLoaded', () => {
     app.innerHTML = `
       <h1>Bienvenue sur le jeu !</h1>
       <button id="create-room">Créer une room</button>
-      <button id="join-room" disabled>Rejoindre une room (bientôt)</button>
+      <button id="join-room">Rejoindre une room</button>
     `;
     document.getElementById('create-room').onclick = showRoomOptions;
+    document.getElementById('join-room').onclick = showJoinRoomForm;
+  // Formulaire pour rejoindre une room
+  function showJoinRoomForm() {
+    app.innerHTML = `
+      <h2>Rejoindre une room</h2>
+      <form id="join-form">
+        <label for="join-code">Code de la room :</label><br>
+        <input id="join-code" maxlength="6" style="text-transform:uppercase;letter-spacing:2px;font-size:1.2em;" required autofocus><br><br>
+        <label for="player-name">Pseudo :</label><br>
+        <input id="player-name" maxlength="16" placeholder="Votre pseudo" required><br><br>
+        <button type="submit">Rejoindre</button>
+        <button type="button" onclick="location.reload()">Annuler</button>
+      </form>
+      <div id="join-error" style="color:red;margin-top:10px;"></div>
+    `;
+    document.getElementById('join-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('join-code').value.trim().toUpperCase();
+      const player = document.getElementById('player-name').value.trim();
+      if (!code || !player) return;
+      try {
+        const res = await fetch('/api/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, player })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          // Redirige vers la page d'attente de la room (même page que le créateur)
+          showRoomCodePage(code, null, null, player);
+        } else {
+          document.getElementById('join-error').textContent = data.error || 'Erreur lors de la connexion à la room.';
+        }
+      } catch (e) {
+        document.getElementById('join-error').textContent = 'Erreur réseau.';
+      }
+    };
+  }
   }
 
   // Choix du nombre de joueurs et du timer
@@ -62,16 +100,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Nouvelle page dédiée pour afficher le code de la room
     function showRoomCodePage(code, players, timer) {
-      let currentPlayers = 1; // Le créateur est déjà dans la room
+      // Si players ou timer ne sont pas fournis (cas du join), on va les chercher via l'API
+      let currentPlayers = 1;
+      let totalPlayers = players;
+      let timerValue = timer;
       let intervalId;
+      let pseudo = arguments[3] || null;
+      async function fetchRoomInfo() {
+        try {
+          const res = await fetch(`/api/room?code=${code}`);
+          const data = await res.json();
+          if (data && data.players) {
+            currentPlayers = data.players.length;
+            if (!totalPlayers) totalPlayers = data.players.length > 2 ? 6 : 2; // fallback
+          }
+        } catch (e) {}
+      }
       function render() {
         app.innerHTML = `
-          <h2>Room créée !</h2>
-          <p>Voici le code à partager :</p>
+          <h2>Room ${pseudo ? 'trouvée' : 'créée'} !</h2>
+          <p>Code de la room :</p>
           <div style="font-size:2em;font-weight:bold;letter-spacing:4px;margin:20px 0;" id="room-code">${code}</div>
           <button id="copy-code">Copier le code</button>
-          <p style="margin-top:24px;">Joueurs connectés : <span id="player-count">${currentPlayers}</span> / ${players}</p>
-          <button id="go-to-mode" style="margin-top:24px;" disabled>Jouer ${currentPlayers}/${players}</button>
+          <p style="margin-top:24px;">Joueurs connectés : <span id="player-count">${currentPlayers}</span> / ${totalPlayers || '?'}</p>
+          <button id="go-to-mode" style="margin-top:24px;" disabled>Jouer ${currentPlayers}/${totalPlayers || '?'} </button>
           <button onclick="location.reload()" style="margin-top:8px;">Retour à l'accueil</button>
         `;
         document.getElementById('copy-code').onclick = () => {
@@ -79,29 +131,22 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('copy-code').textContent = 'Code copié !';
         };
         const playBtn = document.getElementById('go-to-mode');
-        playBtn.textContent = `Jouer ${currentPlayers}/${players}`;
-        playBtn.disabled = currentPlayers < players;
-        if (currentPlayers >= players) {
+        playBtn.textContent = `Jouer ${currentPlayers}/${totalPlayers || '?'}`;
+        playBtn.disabled = currentPlayers < totalPlayers;
+        if (currentPlayers >= totalPlayers) {
           playBtn.disabled = false;
         }
         playBtn.onclick = () => {
           window.location.href = 'game.html';
         };
       }
-      // Fonction pour vérifier le nombre de joueurs connectés
       async function pollPlayers() {
-        try {
-          const res = await fetch(`/api/room?code=${code}`);
-          const data = await res.json();
-          if (data && data.players) {
-            currentPlayers = data.players.length;
-            render();
-          }
-        } catch (e) {}
+        await fetchRoomInfo();
+        render();
       }
-      render();
+      // Première récupération
+      pollPlayers();
       intervalId = setInterval(pollPlayers, 2000);
-      // Nettoyer l'intervalle si on quitte la page
       window.addEventListener('beforeunload', () => clearInterval(intervalId));
     }
   }
