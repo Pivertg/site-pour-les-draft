@@ -3,18 +3,72 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jeu - Créer une room</title>
-    <style>
-      body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
-      #app { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0001; padding: 32px 24px; }
-      button { margin: 8px 0; padding: 10px 20px; border-radius: 6px; border: none; background: #0078d7; color: #fff; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
-      button:disabled { background: #aaa; cursor: not-allowed; }
-      button:hover:not(:disabled) { background: #005fa3; }
-      h1, h2, h3 { margin-top: 0; }
-    </style>
+    <title>Accueil</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
   </head>
   <body>
-    <div id="app"></div>
-    <script src="app.js"></script>
+    <main class="main-black-bg">
+      <div class="card" id="main-card"></div>
+    </main>
+    <script>
+      // Vérifie la connexion
+      fetch('/api/me.php')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(user => {
+          // Redirige vers le lobby si connecté
+          window.location.href = 'lobby.html';
+        })
+        .catch(() => {
+          // Affiche la carte de connexion/inscription
+          document.getElementById('main-card').innerHTML = `
+            <div style='color:#fff;text-align:center;padding:32px 0;'>
+              <h1>Bienvenue !</h1>
+              <div class="main-actions">
+                <button class="main-btn" id="btn-login-card">Connecte-toi</button>
+                <button class="main-btn" id="btn-register-card">Crée un compte</button>
+              </div>
+            </div>
+          `;
+          // Listeners
+          const btnLoginCard = document.getElementById('btn-login-card');
+          const btnRegisterCard = document.getElementById('btn-register-card');
+          if(btnLoginCard) btnLoginCard.onclick = () => window.location.href = 'login.html';
+          if(btnRegisterCard) btnRegisterCard.onclick = () => {
+            document.getElementById('main-card').innerHTML = `
+              <form class="form" id="register-form" style="margin: 40px auto;">
+                <span class="input-span">
+                  <label for="pseudo" class="label">Pseudo</label>
+                  <input type="text" name="pseudo" id="pseudo" required />
+                </span>
+                <span class="input-span">
+                  <label for="password" class="label">Mot de passe</label>
+                  <input type="password" name="password" id="password" required />
+                </span>
+                <input class="submit" type="submit" value="Créer un compte" />
+                <span class="span">Déjà un compte ? <a href="#" id="show-login">Se connecter</a></span>
+                <div id="auth-error" style="color:red;margin-top:10px;"></div>
+              </form>
+            `;
+            document.getElementById('register-form').onsubmit = async (e) => {
+              e.preventDefault();
+              const pseudo = document.getElementById('pseudo').value.trim();
+              const password = document.getElementById('password').value.trim();
+              const res = await fetch('/api/register.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pseudo, password })
+              });
+              if (res.ok) {
+                window.location.reload();
+              } else {
+                const data = await res.json();
+                document.getElementById('auth-error').textContent = data.error || "Erreur d'inscription";
+              }
+            };
+            document.getElementById('show-login').onclick = () => window.location.reload();
+          };
+        });
+    </script>
   </body>
 </html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lobby</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <main class="main-black-bg">
+      <div class="card" id="lobby-card">
+        <h1>Lobby</h1>
+        <div class="main-actions">
+          <button class="main-btn" id="btn-create">Créer une room</button>
+          <button class="main-btn" id="btn-join">Rejoindre une room</button>
+        </div>
+      </div>
+    </main>
+    <script>
+      // Vérifie la connexion, sinon redirige vers l'accueil
+      fetch('/api/me.php')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .catch(() => {
+          window.location.href = 'index.html';
+        });
+      document.getElementById('btn-create').onclick = () => window.location.href = 'createroom.html';
+      document.getElementById('btn-join').onclick = () => window.location.href = 'joinroom.html';
+    </script>
+  </body>
+</html>

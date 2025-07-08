@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rejoindre une room</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <main class="main-black-bg">
+      <div class="card" id="join-room-card">
+        <h1>Rejoindre une room</h1>
+        <form id="join-room-form">
+          <label for="room-code">Code de la room :</label>
+          <input id="room-code" maxlength="6" style="text-transform:uppercase;letter-spacing:2px;font-size:1.2em;" required autofocus><br><br>
+          <button type="submit" class="main-btn">Rejoindre</button>
+        </form>
+        <div id="join-room-error" style="color:red;margin-top:10px;"></div>
+      </div>
+    </main>
+    <script>
+      document.getElementById('join-room-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const code = document.getElementById('room-code').value.trim().toUpperCase();
+        if (!code) return;
+        // Vérifie si la room existe
+        const res = await fetch(`/api/room.php?code=${code}`);
+        if (res.ok) {
+          // Redirige vers la partie
+          window.location.href = `play.html?code=${code}`;
+        } else {
+          document.getElementById('join-room-error').textContent = "Code invalide ou room introuvable.";
+        }
+      };
+    </script>
+  </body>
+</html>

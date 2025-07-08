@@ -4,59 +4,84 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fin de partie</title>
-    <style>
-      body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
-      .end-container {
-        max-width: 420px;
-        margin: 80px auto;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 24px #0002;
-        padding: 40px 32px;
-        text-align: center;
-      }
-      .end-container h1 {
-        font-size: 2em;
-        margin-bottom: 16px;
-      }
-      .end-container p {
-        font-size: 1.1em;
-        margin-bottom: 32px;
-      }
-      .end-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        align-items: center;
-      }
-      .end-actions button {
-        padding: 12px 32px;
-        font-size: 1.1em;
-        border-radius: 8px;
-        border: none;
-        background: #0078d7;
-        color: #fff;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      .end-actions button:disabled {
-        background: #aaa;
-        cursor: not-allowed;
-      }
-      .end-actions button:hover:not(:disabled) {
-        background: #005fa3;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="end.css">
   </head>
   <body>
     <div class="end-container">
       <h1>Partie terminée !</h1>
-      <p>Bravo à tous les joueurs.<br>Que souhaitez-vous faire ?</p>
+      <div id="recap"></div>
       <div class="end-actions">
-        <button id="restart-btn">Recommencer une partie</button>
-        <button id="discord-btn" disabled>Envoyer le résultat sur Discord (à venir)</button>
+        <button id="discord-btn">Envoyer la draft sur Discord</button>
+        <button id="goto-discord">Aller sur le serveur Discord</button>
+        <button id="restart-btn">Relancer une partie</button>
+        <button id="home-btn">Retour à l'accueil</button>
       </div>
+      <div id="end-msg" style="margin-top:10px;color:green;"></div>
     </div>
-    <script src="end.js"></script>
+    <script>
+      // Récupère le code de la room
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      let gameData = null;
+      async function fetchRecap() {
+        const res = await fetch(`/api/room.php?code=${code}`);
+        gameData = await res.json();
+        let html = `<h2>Résumé de la draft</h2>`;
+        html += `<p><b>Map :</b> ${gameData.map || 'Inconnue'}</p>`;
+        html += `<p><b>Mode :</b> ${gameData.mode || 'Inconnu'}</p>`;
+        html += `<p><b>Joueurs :</b> ${(gameData.players || []).join(', ')}</p>`;
+        html += `<p><b>Bans bleu :</b> ${(gameData.bansBleu||[]).map(b=>b.name).join(', ')}</p>`;
+        html += `<p><b>Bans rouge :</b> ${(gameData.bansRouge||[]).map(b=>b.name).join(', ')}</p>`;
+        html += `<p><b>Picks bleu :</b> ${(gameData.picksBleu||[]).map(b=>b.name).join(', ')}</p>`;
+        html += `<p><b>Picks rouge :</b> ${(gameData.picksRouge||[]).map(b=>b.name).join(', ')}</p>`;
+        document.getElementById('recap').innerHTML = html;
+      }
+      fetchRecap();
+
+      // Envoi Discord via webhook
+      document.getElementById('discord-btn').onclick = async () => {
+        if (!gameData) return;
+        const webhookUrl = 'https://discord.com/api/webhooks/TON_WEBHOOK'; // À remplacer
+        const content = `**Draft terminée !**\nMap : ${gameData.map}\nMode : ${gameData.mode}\nJoueurs : ${(gameData.players||[]).join(', ')}\nBans bleu : ${(gameData.bansBleu||[]).map(b=>b.name).join(', ')}\nBans rouge : ${(gameData.bansRouge||[]).map(b=>b.name).join(', ')}\nPicks bleu : ${(gameData.picksBleu||[]).map(b=>b.name).join(', ')}\nPicks rouge : ${(gameData.picksRouge||[]).map(b=>b.name).join(', ')}`;
+        try {
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+          });
+          // Suppression du fichier JSON après envoi Discord
+          await fetch('/api/cleanup_game.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `code=${encodeURIComponent(code)}`
+          });
+          document.getElementById('end-msg').textContent = 'Draft envoyée sur Discord et supprimée du serveur !';
+        } catch {
+          document.getElementById('end-msg').textContent = 'Erreur lors de l\'envoi Discord.';
+        }
+      };
+      document.getElementById('goto-discord').onclick = () => {
+        window.open('https://discord.gg/TON_SERVEUR', '_blank'); // À remplacer
+      };
+      document.getElementById('restart-btn').onclick = async () => {
+        // Relance la partie avec le même code et supprime l'ancienne draft
+        await fetch('/api/cleanup_game.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `code=${encodeURIComponent(code)}`
+        });
+        window.location.href = `play.html?code=${code}`;
+      };
+      document.getElementById('home-btn').onclick = async () => {
+        // Retour à l'accueil et supprime la draft
+        await fetch('/api/cleanup_game.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `code=${encodeURIComponent(code)}`
+        });
+        window.location.href = 'index.html';
+      };
+    </script>
   </body>
 </html>

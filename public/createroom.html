@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Créer une room</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <main class="main-black-bg">
+      <div class="card" id="create-room-card">
+        <h1>Créer une room</h1>
+        <form id="create-room-form">
+          <label for="nb-joueurs">Nombre de joueurs :</label>
+          <select id="nb-joueurs" name="nb-joueurs">
+            <option value="2">2</option>
+            <option value="6">6</option>
+          </select>
+          <br><br>
+          <label for="timer">Timer :</label>
+          <select id="timer" name="timer">
+            <option value="1">1x (rapide)</option>
+            <option value="1.5">1.5x (normal)</option>
+            <option value="2">2x (lent)</option>
+          </select>
+          <br><br>
+          <button type="submit" class="main-btn">Créer la room</button>
+        </form>
+        <div id="create-room-error" style="color:red;margin-top:10px;"></div>
+      </div>
+      <div class="card" id="room-wait-card" style="display:none;"></div>
+    </main>
+    <script>
+      let pollingInterval = null;
+      let roomCode = null;
+      let chefPseudo = null;
+      let nbJoueurs = null;
+      let timer = null;
+      let userPseudo = null;
+
+      document.getElementById('create-room-form').onsubmit = async (e) => {
+        e.preventDefault();
+        nbJoueurs = document.getElementById('nb-joueurs').value;
+        timer = document.getElementById('timer').value;
+        // Récupère le pseudo de l'utilisateur connecté
+        let user;
+        try {
+          const res = await fetch('/api/me.php');
+          if (!res.ok) throw new Error();
+          user = await res.json();
+        } catch {
+          document.getElementById('create-room-error').textContent = "Erreur : utilisateur non connecté.";
+          return;
+        }
+        userPseudo = user.pseudo;
+        // Envoie la création de room à l'API (à adapter côté PHP pour gérer les paramètres)
+        const response = await fetch('/api/room.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ player: user.pseudo, nbJoueurs, timer })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          roomCode = data.code;
+          chefPseudo = user.pseudo;
+          showRoomWait();
+        } else {
+          const data = await response.json();
+          document.getElementById('create-room-error').textContent = data.error || 'Erreur lors de la création de la room.';
+        }
+      };
+
+      function showRoomWait() {
+        document.getElementById('create-room-card').style.display = 'none';
+        document.getElementById('room-wait-card').style.display = 'block';
+        pollingInterval = setInterval(updateRoomInfo, 2000);
+        updateRoomInfo();
+      }
+
+      async function updateRoomInfo() {
+        if (!roomCode) return;
+        let data;
+        try {
+          const res = await fetch(`/api/room.php?code=${roomCode}`);
+          data = await res.json();
+        } catch {
+          document.getElementById('room-wait-card').innerHTML = '<p>Erreur de connexion à la room.</p>';
+          return;
+        }
+        // data.players = liste des pseudos
+        let isChef = (userPseudo === chefPseudo);
+        let joueursList = data.players.map(p =>
+          `<li>${p}${isChef && p !== chefPseudo ? ` <button onclick=\"kickPlayer('${p}')\">❌</button>` : ''}${p === chefPseudo ? ' (chef)' : ''}</li>`
+        ).join('');
+        document.getElementById('room-wait-card').innerHTML = `
+          <h2>Room créée !</h2>
+          <p>Code de la room :</p>
+          <div style="font-size:2em;font-weight:bold;letter-spacing:4px;margin:20px 0;">${roomCode}</div>
+          <button id="copy-code">Copier le code</button>
+          <p style="margin-top:24px;">Joueurs connectés : <span id="player-count">${data.players.length}</span> / ${nbJoueurs}</p>
+          <ul>${joueursList}</ul>
+          <button id="start-game" ${data.players.length < nbJoueurs ? 'disabled' : ''}>Lancer la partie</button>
+          <button onclick="window.location.href='lobby.html'">Retour au lobby</button>
+        `;
+        document.getElementById('copy-code').onclick = () => {
+          navigator.clipboard.writeText(roomCode);
+          document.getElementById('copy-code').textContent = 'Code copié !';
+        };
+        document.getElementById('start-game').onclick = () => {
+          clearInterval(pollingInterval);
+          window.location.href = `play.html?code=${roomCode}`;
+        };
+      }
+
+      // Fonction pour kick un joueur (à implémenter côté PHP)
+      window.kickPlayer = async function(pseudo) {
+        if (!roomCode) return;
+        await fetch('/api/kick.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: roomCode, pseudo })
+        });
+        updateRoomInfo();
+      };
+    </script>
+  </body>
+</html>

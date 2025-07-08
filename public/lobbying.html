@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Salle d'attente</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <main class="main-black-bg">
+      <div class="card" id="lobbying-card">
+        <h1>Salle d'attente</h1>
+        <div id="room-info"></div>
+        <ul id="players-list"></ul>
+        <div id="lobby-actions"></div>
+        <div id="lobby-error" style="color:red;margin-top:10px;"></div>
+      </div>
+    </main>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      let userPseudo = null;
+      let chefPseudo = null;
+      let nbJoueurs = null;
+      let pollingInterval = null;
+
+      async function getUserPseudo() {
+        try {
+          const res = await fetch('/api/me.php');
+          if (!res.ok) throw new Error();
+          const user = await res.json();
+          return user.pseudo;
+        } catch {
+          return null;
+        }
+      }
+
+      async function pollRoom() {
+        try {
+          const res = await fetch(`/api/room.php?code=${code}`);
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          nbJoueurs = data.nbJoueurs || 2;
+          chefPseudo = data.players[0];
+          renderLobby(data);
+        } catch {
+          document.getElementById('lobby-error').textContent = "Erreur de connexion à la room.";
+        }
+      }
+
+      function renderLobby(data) {
+        document.getElementById('room-info').innerHTML = `<b>Code de la room :</b> <span style="font-size:1.2em;letter-spacing:2px;">${code}</span><br><b>Chef :</b> ${chefPseudo}<br><b>Joueurs :</b> ${data.players.length} / ${nbJoueurs}`;
+        document.getElementById('players-list').innerHTML = data.players.map(p =>
+          `<li>${p}${userPseudo === chefPseudo && p !== chefPseudo ? ` <button onclick=\"kickPlayer('${p}')\">❌</button>` : ''}${p === chefPseudo ? ' (chef)' : ''}</li>`
+        ).join('');
+        let actions = '';
+        if (userPseudo === chefPseudo && data.players.length >= nbJoueurs) {
+          actions += `<button id="start-game">Lancer la partie</button>`;
+        }
+        actions += `<button id="leave-room">Quitter la room</button>`;
+        document.getElementById('lobby-actions').innerHTML = actions;
+        if (document.getElementById('start-game')) {
+          document.getElementById('start-game').onclick = () => {
+            window.location.href = `play.html?code=${code}`;
+          };
+        }
+        document.getElementById('leave-room').onclick = () => {
+          window.location.href = 'lobby.html';
+        };
+      }
+
+      window.kickPlayer = async function(pseudo) {
+        await fetch('/api/kick.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, pseudo })
+        });
+        pollRoom();
+      };
+
+      (async () => {
+        userPseudo = await getUserPseudo();
+        if (!userPseudo) {
+          alert('Utilisateur non connecté.');
+          window.location.href = 'index.html';
+          return;
+        }
+        pollingInterval = setInterval(pollRoom, 2000);
+        pollRoom();
+      })();
+    </script>
+  </body>
+</html>

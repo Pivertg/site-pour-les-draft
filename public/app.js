@@ -4,15 +4,35 @@
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.getElementById('app');
 
-  // Page d'accueil
+  // Affiche la page d'accueil même si l'utilisateur n'est pas connecté
+  fetch('/api/me.php')
+    .then(res => res.ok ? res.json() : Promise.reject())
+    .then(user => {
+      showHome();
+    })
+    .catch(() => {
+      showHome();
+    });
+
   function showHome() {
     app.innerHTML = `
       <h1>Bienvenue sur le jeu !</h1>
       <button id="create-room">Créer une room</button>
       <button id="join-room">Rejoindre une room</button>
     `;
-    document.getElementById('create-room').onclick = showRoomOptions;
-    document.getElementById('join-room').onclick = showJoinRoomForm;
+    document.getElementById('create-room').onclick = () => {
+      // Vérifie la connexion avant d'autoriser
+      fetch('/api/me.php')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(() => showRoomOptions())
+        .catch(() => window.location.href = 'login.html');
+    };
+    document.getElementById('join-room').onclick = () => {
+      fetch('/api/me.php')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(() => showJoinRoomForm())
+        .catch(() => window.location.href = 'login.html');
+    };
   // Formulaire pour rejoindre une room
   function showJoinRoomForm() {
     app.innerHTML = `

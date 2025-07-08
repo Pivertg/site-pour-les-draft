@@ -1,0 +1,61 @@
+/* index.css : styles spécifiques à la page d'accueil */
+
+.main-black-bg {
+  min-height: 100vh;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  border: 2px solid #222;
+  background: #181818;
+  box-shadow: 0 8px 32px #0008, 0 1.5px 8px #0002;
+  border-radius: 18px;
+  min-width: 340px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+}
+
+#main-card h1 {
+  color: #58bc82;
+  font-size: 2.2em;
+  margin-bottom: 0.5em;
+}
+
+#main-card p {
+  color: #fff;
+  font-size: 1.1em;
+}
+
+.main-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 32px;
+  align-items: center;
+}
+
+.main-btn {
+  width: 220px;
+  padding: 16px 0;
+  font-size: 1.2em;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #58bc82 0%, #0078d7 100%);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0003;
+  transition: background 0.2s, transform 0.2s;
+}
+.main-btn:hover {
+  background: linear-gradient(90deg, #0078d7 0%, #58bc82 100%);
+  transform: translateY(-2px) scale(1.04);
+}

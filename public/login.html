@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connexion</title>
+    <link rel="stylesheet" href="login.css">
+  </head>
+  <body>
+    <form class="form" id="auth-form" style="margin: 40px auto;">
+      <span class="input-span">
+        <label for="pseudo" class="label">Pseudo</label>
+        <input type="text" name="pseudo" id="pseudo" required />
+      </span>
+      <span class="input-span">
+        <label for="password" class="label">Mot de passe</label>
+        <input type="password" name="password" id="password" required />
+      </span>
+      <input class="submit" type="submit" value="Se connecter" />
+      <span class="span">Pas de compte ? <a href="#" id="show-register">Créer un compte</a></span>
+      <div id="auth-error" style="color:red;margin-top:10px;"></div>
+    </form>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('auth-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const pseudo = document.getElementById('pseudo').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const res = await fetch('/api/login.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pseudo, password })
+        });
+        if (res.ok) {
+          window.location.href = 'index.html';
+        } else {
+          const data = await res.json();
+          document.getElementById('auth-error').textContent = data.error || 'Erreur de connexion';
+        }
+      };
+      document.getElementById('show-register').onclick = (e) => {
+        e.preventDefault();
+        document.getElementById('auth-form').outerHTML = `
+          <form class=\"form\" id=\"register-form\" style=\"margin: 40px auto;\">\n\
+            <span class=\"input-span\">\n\
+              <label for=\"pseudo\" class=\"label\">Pseudo</label>\n\
+              <input type=\"text\" name=\"pseudo\" id=\"pseudo\" required />\n\
+            </span>\n\
+            <span class=\"input-span\">\n\
+              <label for=\"password\" class=\"label\">Mot de passe</label>\n\
+              <input type=\"password\" name=\"password\" id=\"password\" required />\n\
+            </span>\n\
+            <input class=\"submit\" type=\"submit\" value=\"Créer un compte\" />\n\
+            <span class=\"span\">Déjà un compte ? <a href=\"#\" id=\"show-login\">Se connecter</a></span>\n\
+            <div id=\"auth-error\" style=\"color:red;margin-top:10px;\"></div>\n\
+          </form>\n\
+        `;
+        document.getElementById('register-form').onsubmit = async (e) => {
+          e.preventDefault();
+          const pseudo = document.getElementById('pseudo').value.trim();
+          const password = document.getElementById('password').value.trim();
+          const res = await fetch('/api/register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pseudo, password })
+          });
+          if (res.ok) {
+            window.location.href = 'index.html';
+          } else {
+            const data = await res.json();
+            document.getElementById('auth-error').textContent = data.error || "Erreur d'inscription";
+          }
+        };
+        document.getElementById('show-login').onclick = () => window.location.reload();
+      };
+    });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+/* game.css : styles spécifiques à la page de jeu */
+
+body {
+  background: linear-gradient(120deg, #232526 0%, #58bc82 100%);
+}
+
+.card {
+  border: 2px solid #fff;
+  box-shadow: 0 8px 32px #23252655, 0 1.5px 8px #0002;
+  background: #232526;
+}
+
+#game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+#game-title {
+  color: #58bc82;
+  font-size: 2em;
+  margin-bottom: 1em;
+}
+
+#game-actions button {
+  margin: 12px 0;
+}

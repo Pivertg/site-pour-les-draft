@@ -1,0 +1,167 @@
+body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+h1, h2, h3 { margin-top: 0; }
+
+/* Header barre */
+.main-header {
+  width: 100vw;
+  min-height: 60px;
+  background: #212121;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 32px;
+  box-sizing: border-box;
+}
+
+/* Bouton Uiverse.io by TISEPSE */
+a {
+  position: relative;
+  display: inline-block;
+  padding: 15px 30px;
+  border: 2px solid #fefefe;
+  text-transform: uppercase;
+  color: #fefefe;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 20px;
+  background: none;
+  overflow: hidden;
+}
+a::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% - 12px);
+  background-color: #212121;
+  transition: 0.3s ease-in-out;
+  transform: scaleY(1);
+  z-index: 1;
+}
+a:hover::before {
+  transform: scaleY(0);
+}
+a::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: -2px;
+  height: calc(100% + 4px);
+  width: calc(100% - 12px);
+  background-color: #212121;
+  transition: 0.3s ease-in-out;
+  transform: scaleX(1);
+  transition-delay: 0.5s;
+  z-index: 2;
+}
+a:hover::after {
+  transform: scaleX(0);
+}
+a span {
+  position: relative;
+  z-index: 3;
+}
+
+button {
+  background: #212121;
+  color: #fefefe;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 6px;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:disabled {
+  background: #aaa;
+  color: #fff;
+  cursor: not-allowed;
+}
+button:hover:not(:disabled) {
+  background: #58bc82;
+  color: #212121;
+}
+
+/* Card Uiverse.io by Yaseen549 */
+.card {
+  width: 340px;
+  min-height: 180px;
+  border-radius: 30px;
+  background: #212121;
+  box-shadow: 15px 15px 30px rgb(25, 25, 25),
+              -15px -15px 30px rgb(60, 60, 60);
+  margin: 32px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Formulaire stylé Uiverse.io */
+.form {
+  --bg-light: #efefef;
+  --bg-dark: #707070;
+  --clr: #58bc82;
+  --clr-alpha: #9c9c9c60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+.form .input-span {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.form input[type="text"],
+.form input[type="password"] {
+  border-radius: 0.5rem;
+  padding: 1rem 0.75rem;
+  width: 100%;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--clr-alpha);
+  outline: 2px solid var(--bg-dark);
+}
+.form input[type="text"]:focus,
+.form input[type="password"]:focus {
+  outline: 2px solid var(--clr);
+}
+.label {
+  align-self: flex-start;
+  color: var(--clr);
+  font-weight: 600;
+}
+.form .submit {
+  padding: 1rem 0.75rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 3rem;
+  background-color: var(--bg-dark);
+  color: var(--bg-light);
+  border: none;
+  cursor: pointer;
+  transition: all 300ms;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.form .submit:hover {
+  background-color: var(--clr);
+  color: var(--bg-dark);
+}
+.span {
+  text-decoration: none;
+  color: var(--bg-dark);
+}
+.span a {
+  color: var(--clr);
+}
