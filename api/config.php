@@ -1,22 +1,10 @@
 <?php
-// config.php
-$host = 'localhost';
-$db   = 'NOM_DE_TA_BDD';
-$user = 'UTILISATEUR_BDD';
-$pass = 'MOT_DE_PASSE_BDD';
-$charset = 'utf8mb4';
-
-$dsn = \"mysql:host=$host;dbname=$db;charset=$charset\";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-try {
-     $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-     http_response_code(500);
-     echo json_encode(['error' => 'Erreur connexion BDD']);
-     exit;
+$host = "sql313.infinityfree.com"; // remplace par ton vrai serveur
+$user = "if0_39441285";            // ton nom d’utilisateur MySQL
+$pass = "9LA3MJbIduLI";        // ton mot de passe MySQL
+$db   = "if0_39441285_pivert"; // nom complet de la base
+$conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) {
+    die("Erreur de connexion: " . $conn->connect_error);
 }
 ?>
